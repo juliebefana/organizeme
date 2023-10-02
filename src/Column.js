@@ -1,27 +1,51 @@
 import React from 'react';
+import Card from './Card';
 
-function Column({ title, cards, inputText, onDragOver, onDrop, onInputChange, onAddCard }) {
+function Column({
+  columnId,
+  column,
+  selectedCard,
+  handleDragStart,
+  handleDragOver,
+  handleDrop,
+  handleInputChange,
+  handleAddCard,
+  handleInputKeyPress,
+  handleCardClick,
+  handleDeleteClick,
+}) {
   return (
-    <div className="column" onDragOver={onDragOver} onDrop={onDrop}>
-      <h2>{title}</h2>
+    <div className="column" onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, columnId)}>
+      <h2>{column.title}</h2>
       <div className="card-list">
-        {cards.map((card) => (
-          <div key={card.id} className="card" draggable="true">
-            {card.text}
-          </div>
+        {column.cards.map((card) => (
+          <Card
+            key={card.id}
+            card={card}
+            isSelected={selectedCard === card.id}
+            handleDragStart={(e) => handleDragStart(e, card, columnId)}
+            handleCardClick={handleCardClick}
+            handleDeleteClick={() => handleDeleteClick(columnId)}
+          />
         ))}
       </div>
       <div className="card-form">
         <input
           type="text"
           placeholder="Enter task"
-          value={inputText}
-          onChange={onInputChange}
+          value={column.inputText}
+          onChange={(e) => handleInputChange(e, columnId)}
+          onKeyDown={(e) => handleInputKeyPress(e, columnId)}
         />
-        <button onClick={onAddCard}>Add</button>
+        <button onClick={() => handleAddCard(columnId)}>Add</button>
       </div>
     </div>
   );
 }
 
 export default Column;
+
+
+
+
+

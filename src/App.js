@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
 import Column from './Column';
-import Card from './Card';
 
 function App() {
   const [columns, setColumns] = useState({
@@ -21,6 +20,12 @@ function App() {
       inputText: '',
     },
   });
+  const [selectedCard, setSelectedCard] = useState(null);
+
+  const handleDragStart = (e, card, columnId) => {
+    e.dataTransfer.setData('card', JSON.stringify(card));
+    e.dataTransfer.setData('columnId', columnId);
+  };
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -28,6 +33,26 @@ function App() {
 
   const handleDrop = (e, targetColumnId) => {
     e.preventDefault();
+    const droppedCardJSON = e.dataTransfer.getData('card');
+    const sourceColumnId = e.dataTransfer.getData('columnId');
+
+    try {
+      const droppedCard = JSON.parse(droppedCardJSON);
+      if (droppedCard && droppedCard.id) {
+        if (sourceColumnId !== targetColumnId) {
+          const newColumns = { ...columns };
+          newColumns[sourceColumnId].cards = newColumns[sourceColumnId].cards.filter(
+            (card) => card.id !== droppedCard.id
+          );
+
+          newColumns[targetColumnId].cards.push(droppedCard);
+
+          setColumns(newColumns);
+        }
+      }
+    } catch (error) {
+      console.error('Error parsing dropped card JSON:', error);
+    }
   };
 
   const handleInputChange = (e, columnId) => {
@@ -47,28 +72,60 @@ function App() {
     }
   };
 
+  const handleInputKeyPress = (e, columnId) => {
+    if (e.key === 'Enter') {
+      handleAddCard(columnId);
+    }
+  };
+
+  const handleCardClick = (cardId) => {
+    setSelectedCard(cardId);
+  };
+
+  const handleDeleteClick = (columnId) => {
+    if (selectedCard !== null) {
+      const newColumns = { ...columns };
+      newColumns[columnId].cards = newColumns[columnId].cards.filter(
+        (card) => card.id !== selectedCard
+      );
+      setSelectedCard(null);
+      setColumns(newColumns);
+    }
+  };
+
   return (
     <div className="App">
-      <h1>Task Board</h1>
+      <h1>OrganizeMe</h1>
       <div className="columns-container">
         {Object.keys(columns).map((columnId) => (
           <Column
             key={columnId}
-            title={columns[columnId].title}
-            cards={columns[columnId].cards}
-            inputText={columns[columnId].inputText}
-            onDragOver={handleDragOver}
-            onDrop={(e) => handleDrop(e, columnId)}
-            onInputChange={(e) => handleInputChange(e, columnId)}
-            onAddCard={() => handleAddCard(columnId)}
+            columnId={columnId}
+            column={columns[columnId]}
+            selectedCard={selectedCard}
+            handleDragStart={handleDragStart}
+            handleDragOver={handleDragOver}
+            handleDrop={handleDrop}
+            handleInputChange={handleInputChange}
+            handleAddCard={handleAddCard}
+            handleInputKeyPress={handleInputKeyPress}
+            handleCardClick={handleCardClick}
+            handleDeleteClick={handleDeleteClick}
           />
         ))}
       </div>
+      <footer className="footer">
+        &copy; {new Date().getFullYear()} Developed and designed by Julia Hiller. All Rights Reserved.
+      </footer>
     </div>
   );
 }
 
 export default App;
+
+
+
+
 
 
 
