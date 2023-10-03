@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import './App.css';
-import Column from './Column';
+import Column from './Components/Column';
 
 function App() {
   const [columns, setColumns] = useState({
